@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
-import "./ResourceGrid.css";
+import "./ResourceCalendar.css";
 import { DayResourceName } from "./DayResourceName";
 import { GridLineDayView } from "./GridLineDayView";
 import { DayItem } from "./DayItem";
@@ -23,7 +23,7 @@ const number_of_rows = 24; // as cell
 const number_of_columns = 6; // as cell
 const rowHeight = 60; // as pixel
 
-const ResourceGrid = ({
+const ResourceCalendar = ({
   heightWorkSpace, // scrolling height space
   containerHeightCalculator, // viewport space
   width,
@@ -533,7 +533,7 @@ const ResourceGrid = ({
   );
 };
 
-export { ResourceGrid };
+export { ResourceCalendar };
 
 const styles = {
   playgroundDnD: (width_viewport, height_workspace) => {

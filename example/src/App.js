@@ -1,14 +1,16 @@
 /* eslint-disable */
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { ResourceGrid } from "./components/ResourceGrid";
+import { ResourceCalendar } from "./components/ResourceCalendar";
 import { MockData } from "./mockdata.json";
 import "./App.scss";
 const App = props => {
-  const [heightWorkSpace, setHeightWorkSpace] = useState(0);
-  const refHeightWorkSpace = useRef(null);
+  const [realHeightScrollingSpace, setRealHeightScrollingSpace] = useState(0);
+  const refParentOfResourceCalendar = useRef(null);
 
   useLayoutEffect(() => {
-    setHeightWorkSpace(refHeightWorkSpace.current.clientHeight);
+    setRealHeightScrollingSpace(
+      refParentOfResourceCalendar.current.clientHeight
+    );
   });
 
   const calc_containerHeight = () => {
@@ -25,15 +27,15 @@ const App = props => {
         The simple drag and drop and resize-able resource calendar for 24 hours
       </h3>
       <div
-        ref={refHeightWorkSpace}
+        ref={refParentOfResourceCalendar}
         className="hide-native-scrollbar"
         style={styles.calenderContainer(
           calc_containerWidth(),
           calc_containerHeight()
         )}
       >
-        <ResourceGrid
-          heightWorkSpace={heightWorkSpace} // inner height of ResourceTimeGrid includes overflowY
+        <ResourceCalendar
+          realHeightScrollingSpace={realHeightScrollingSpace} // inner height of ResourceTimeGrid includes overflowY
           containerHeightCalculator={calc_containerHeight} // fix ViewPoint height
           width={calc_containerWidth()}
           startFrom7AM={true}

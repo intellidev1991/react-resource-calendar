@@ -1,0 +1,36 @@
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700");
+body {
+  font-family: "Open Sans" !important;
+}
+
+//hide native scroll view for overflow:scroll
+.hide-native-scrollbar {
+  scrollbar-width: none; /* Firefox 64 */
+  -ms-overflow-style: none; /* IE 11 */
+  &::-webkit-scrollbar {
+    /** Webkit */
+    display: none;
+  }
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 9px !important;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f4f5 !important;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #fff !important;
+  border-radius: 9px !important;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #fff !important;
+  border-radius: 9px !important;
+}

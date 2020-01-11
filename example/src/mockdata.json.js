@@ -6,7 +6,7 @@ const red_BadgeDescription = () => {
   return {
     badges: [{ label: "!", colorName: "red" }],
     descriptions: {
-      title: "Daily Vehicle Inspection",
+      title: "Daily Job Inspection",
       status: "Waiting Inspection"
     }
   };
@@ -18,7 +18,7 @@ const redGreen_BadgeDescription = () => {
       { label: "D", colorName: "green" }
     ],
     descriptions: {
-      title: "Daily Vehicle Inspection",
+      title: "Daily Job Inspection",
       customer: "Live Trakway",
       product: "Long rigged panel",
       area: "Liverpool",
@@ -127,31 +127,31 @@ const oneDayEventsGenerator = (baseDay, numberOfItemPerDay = 3) => {
 //--------------------------------------------
 
 const _Names = [
-  "Adam Davis",
-  "Anthony Graham",
-  "Barry White",
-  "Barry Scott",
-  "Colin Hulme",
-  "Carl Archbold",
-  "Gerard Rippin",
-  "Clemmie Gorczany"
+  "Dimitri Nikolaus",
+  "Sidney Renner",
+  "Rhea Kemmer",
+  "Gustave Kunze",
+  "Lawson Bogan",
+  "Jaquan Jones",
+  "Alvena Nicolas",
+  "Rasheed Lehner"
 ];
-const _Vehicles = [
-  "HGV . AD17 0GV",
-  "8 Wheeler . AD17 0GV",
-  "Flatbed . AD18 FCD",
-  "HGV . AD17 0GV",
-  "8 Wheeler . AD17 0GV",
-  "Artic . FY12 EDS",
-  "8 Wheeler . DE13 FES",
-  "Transit . YD18 FAD"
+const _Jobs = [
+  "IT Manager",
+  "DevOps",
+  "Team Leader",
+  "Accountant",
+  "Driver",
+  "Supporter",
+  "Suits",
+  "Buyer"
 ];
 
 /* Data-Structure that server have to pass us
 {
   resourceId: 1,
   name: 'Adam Davis',
-  vehicle: 'HGV . AD17 0GV',
+  job: 'HGV . AD17 0GV',
   events: [
     {
       eventId: commonFunctions.uuidv4(),
@@ -162,7 +162,7 @@ const _Vehicles = [
         { label: 'D', colorName: 'green' }
       ],
       descriptions: {
-        title: 'Daily Vehicle Inspection',
+        title: 'Daily Job Inspection',
         customer: 'Live Trakway',
         product: 'Long rigged panel',
         area: 'Liverpool',
@@ -180,7 +180,7 @@ export const MockData = {
       return {
         resourceId: i + 1,
         name: _Names[i],
-        vehicle: _Vehicles[i],
+        job: _Jobs[i],
         events: oneDayEventsGenerator(date)
       };
     });

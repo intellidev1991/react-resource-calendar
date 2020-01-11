@@ -6,7 +6,7 @@ import { commonFunctions } from "./commonFunctions";
 import { CircleGenerators } from "./CircleGenerators";
 import { useForceUpdate } from "./useForceUpdate";
 import { readOnlyStore, storeNames } from "./globalStore/index";
-import "./DayItem.css"; // custom
+import "./GridItem.css"; // custom
 
 const calculate_Y_AxisAsStartPoint = (startTime, rowHeight) => {
   let start = 0;
@@ -42,7 +42,7 @@ const addMinutes = (baseDate, min) => {
     .toDate();
 };
 
-const DayItem = ({
+const GridItem = ({
   viewportWidth,
   number_of_columns,
   rowHeight,
@@ -53,7 +53,9 @@ const DayItem = ({
   endTime,
   badges = [], // array of => [{ label: '!', colorName: 'red' }] > as convention if badges array contain more that 1 item then: the first item contain the smallCircleBadge info, otherwise small badge should be gone.
   descriptions = {},
-  notifyPositionChanged = null
+  notifyPositionChanged = null,
+  gridItemContent: GridItemContent,
+  data
 }) => {
   const forceUpdate = useForceUpdate();
 
@@ -90,9 +92,6 @@ const DayItem = ({
       }
     }
     return () => {
-      try {
-        document.removeEventListener("mousedown", handleInsideOrOutsideClick);
-      } catch (e) {}
       try {
         document.removeEventListener("mousemove", handleParentMouseMove);
       } catch (e) {}
@@ -143,39 +142,16 @@ const DayItem = ({
   const nodeTobBar = useRef();
   const nodeBottomBar = useRef();
   //---
-  useEffect(() => {
-    // add when mounted
-    document.addEventListener("mousedown", handleInsideOrOutsideClick);
-    // return function to be called when unmounted
-    return () => {
-      document.removeEventListener("mousedown", handleInsideOrOutsideClick);
-    };
-  }, []);
 
-  const handleInsideOrOutsideClick = e => {
-    if (nodeTobBar.current.contains(e.target)) {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log("ntb");
-      return;
-    }
-    if (nodeBottomBar.current.contains(e.target)) {
-      e.preventDefault();
-      e.stopPropagation();
-      startDragPos.current = { x: e.clientX, y: e.clientY }; //save current position
-      document.addEventListener("mousemove", handleParentMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      console.log("nbb", e);
-      return;
-    }
-    if (node.current.contains(e.target)) {
-      // inside click
-      return;
-    }
-    // outside click
-    setIsMenuOpen(false);
+  const onMouseDown_nodeBottomBarHandler = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    startDragPos.current = { x: e.clientX, y: e.clientY }; //save current position
+    document.addEventListener("mousemove", handleParentMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    console.log("nbb", e);
+    return;
   };
-
   //-----------------------------
 
   // calculate zIndex based on event hour and minutes, max seconds in one day equals to 86400s - (hour+min) as int> result less time has bigger zIndex
@@ -281,7 +257,6 @@ const DayItem = ({
       )}
     >
       <Draggable
-        //defaultPosition={{ x: 0, y: 0 }}
         position={xy.current} // if present, become controlled component
         axis={axis}
         grid={[viewportWidth / number_of_columns, 5]}
@@ -304,7 +279,7 @@ const DayItem = ({
             ),
             zIndexCalcBasedOnOwnTime(StartTimeRef.current)
           )}
-          className="dayItemContainer"
+          className="gridItemContainer"
         >
           <div
             ref={nodeTobBar}
@@ -314,54 +289,14 @@ const DayItem = ({
               ...styles.nodeTobBar,
               backgroundColor: primaryColor
             }}
-          >
-            {<CircleGenerators badges={badges} />}
-          </div>
+          ></div>
           <div
             style={styles.body(isMenuOpen)}
             onClick={e => {
               e.preventDefault();
             }}
           >
-            <div style={styles.innerContent}>
-              <div style={styles.description}>
-                {descriptions.title && (
-                  <div>
-                    <span style={styles.bold}>{descriptions.title}</span>
-                  </div>
-                )}
-                {descriptions.customer && (
-                  <div>
-                    <span style={styles.bold}>Customer:</span>
-                    <span> {descriptions.customer}</span>
-                  </div>
-                )}
-                {descriptions.product && (
-                  <div>
-                    <span style={styles.bold}>Product:</span>
-                    <span> {descriptions.product}</span>
-                  </div>
-                )}
-                {descriptions.area && (
-                  <div>
-                    <span style={styles.bold}>Area:</span>
-                    <span> {descriptions.area}</span>
-                    {descriptions.postcode && (
-                      <span>
-                        <span style={styles.bold}> . Postcode:</span>
-                        <span> {descriptions.postcode}</span>
-                      </span>
-                    )}
-                  </div>
-                )}
-                {descriptions.status && (
-                  <div>
-                    <span style={styles.bold}>Status:</span>
-                    <span style={styles.status}> {descriptions.status}</span>
-                  </div>
-                )}
-              </div>
-            </div>
+            <GridItemContent {...data} />
           </div>
           <div
             ref={nodeBottomBar}
@@ -371,6 +306,7 @@ const DayItem = ({
               ...styles.nodeBottomBar,
               backgroundColor: primaryColor
             }}
+            onMouseDown={onMouseDown_nodeBottomBarHandler}
           />
         </div>
       </Draggable>
@@ -378,7 +314,7 @@ const DayItem = ({
   );
 };
 
-export { DayItem };
+export { GridItem };
 
 const styles = {
   holder: (zIndex, isDragging) => {
@@ -430,37 +366,7 @@ const styles = {
       zIndex: isMenuOpen ? "3" : "1"
     };
   },
-  innerContent: {
-    position: "absolute",
-    width: "100%"
-  },
-  description: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    fontSize: "12px",
-    fontWeight: "400",
-    marginLeft: "3px"
-  },
-  menuContainer: { position: "absolute", top: "0px", right: "0px" },
-  dotMenu: {
-    width: "4px",
-    height: "14px",
-    marginRight: "10px",
-    position: "absolute",
-    top: "20px",
-    right: "4px",
-    zIndex: "20"
-  },
-  bold: {
-    fontWeight: "700"
-  },
-  status: {
-    color: "#059162",
-    fontWeight: "700"
-  },
   nodeTobBar: {
-    //cursor: 'n-resize'
     cursor: "default"
   },
   nodeBottomBar: {

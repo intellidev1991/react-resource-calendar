@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import "./ResourceCalendar.css";
-import { DayResourceName } from "./DayResourceName";
+import { ColumnHeader } from "./ColumnHeader";
 import { GridLineDayView } from "./GridLineDayView";
-import { DayItem } from "./DayItem";
+import { GridItem } from "./GridItem";
 
 import {
   storeNames,
@@ -29,7 +29,16 @@ const ResourceCalendar = ({
   width,
   startFrom7AM = true,
   resourceData = [],
-  viewType // one of "Day","Week","Month"
+  viewType,
+  columnHeaderContent,
+  columnHeaderContainerStyle,
+  topLeftBackIcon = null,
+  topRightNextIcon = null,
+  topLeftBackIconStyle = {},
+  topRightNextIconStyle = {},
+  onTopRightNextIconClicked = null,
+  onTopLeftBackIconClicked = null,
+  gridItemContent
 }) => {
   const [resourceViewPort, setResourceViewPort] = useState([]);
   const [indexViewPort, setIndexViewPort] = useState(1);
@@ -184,16 +193,27 @@ const ResourceCalendar = ({
       <div
         className={"flex-column flex-jc-center flex-ai-center iconRTGRight"}
         style={{
-          ...styles.iconTimeNavigator,
-          cursor: isBackBtnNavigatorEnabled ? "pointer" : "no-drop"
+          ...styles.iconTimeNavigator(
+            outerGridMarginHorizontal,
+            outerGridMarginTop
+          ),
+          cursor: isBackBtnNavigatorEnabled ? "pointer" : "no-drop",
+          ...topLeftBackIconStyle
         }}
         onClick={() => {
-          console.log("back clicked");
           backViewPort();
+          if (onTopLeftBackIconClicked) onTopLeftBackIconClicked();
         }}
       >
-        <div style={styles.iconTimeArrow}>
-          <img src={Icon_left_time} alt="back" />
+        <div>
+          <img
+            style={{
+              maxHeight: outerGridMarginTop,
+              maxWidth: outerGridMarginHorizontal
+            }}
+            src={topLeftBackIcon ? topLeftBackIcon : Icon_left_time}
+            alt="back"
+          />
         </div>
       </div>
     );
@@ -205,16 +225,27 @@ const ResourceCalendar = ({
       <div
         className={"flex-column flex-jc-center flex-ai-center iconRTGRight"}
         style={{
-          ...styles.iconTimeNavigator,
-          cursor: isNextBtnNavigatorEnabled ? "pointer" : "no-drop"
+          ...styles.iconTimeNavigator(
+            outerGridMarginHorizontal,
+            outerGridMarginTop
+          ),
+          cursor: isNextBtnNavigatorEnabled ? "pointer" : "no-drop",
+          ...topRightNextIconStyle
         }}
         onClick={() => {
-          console.log("next clicked");
           nextViewPort();
+          if (onTopRightNextIconClicked) onTopRightNextIconClicked();
         }}
       >
-        <div style={styles.iconTimeArrow}>
-          <img src={Icon_right_time} alt="next" />
+        <div>
+          <img
+            style={{
+              maxHeight: outerGridMarginTop,
+              maxWidth: outerGridMarginHorizontal
+            }}
+            src={topRightNextIcon ? topRightNextIcon : Icon_right_time}
+            alt="next"
+          />
         </div>
       </div>
     );
@@ -296,12 +327,12 @@ const ResourceCalendar = ({
             resourceViewPort.length > 0 &&
             resourceViewPort.map((item, i) => {
               return (
-                <DayResourceName
+                <ColumnHeader
                   key={"dtr" + i}
                   id={item.resourceId}
-                  name={item.name}
-                  subText={item.vehicle}
-                  events={item.events}
+                  data={item}
+                  columnHeaderContent={columnHeaderContent}
+                  columnHeaderContainerStyle={columnHeaderContainerStyle}
                 />
               );
             })}
@@ -352,7 +383,7 @@ const ResourceCalendar = ({
       eventId,
       newCol,
       originalCol,
-      subColumn, // just for WeekItem and MontItem, in DayItem this is undefined
+      subColumn, // just for WeekItem and MontItem, in GridItem this is undefined
       resourceId_original,
       resourceId_new
     } = data;
@@ -391,7 +422,8 @@ const ResourceCalendar = ({
             if (!day_pending_events_ids.includes(e.eventId)) {
               // check to prevent draw again items that now exist in pending list
               return (
-                <DayItem
+                <GridItem
+                  data={{ ...item, events: e }}
                   viewportWidth={calculate_viewportWidth()}
                   number_of_columns={number_of_columns}
                   rowHeight={rowHeight}
@@ -407,6 +439,7 @@ const ResourceCalendar = ({
                     console.log(x);
                     add_calender_Items_into_pending_list(x);
                   }}
+                  gridItemContent={gridItemContent}
                 />
               );
             } else return null;
@@ -467,7 +500,8 @@ const ResourceCalendar = ({
         const event = e.events[0];
         if (current_viewport_resourceIds.includes(e.resourceId)) {
           return (
-            <DayItem
+            <GridItem
+              data={e}
               viewportWidth={calculate_viewportWidth()}
               number_of_columns={number_of_columns}
               rowHeight={rowHeight}
@@ -483,6 +517,7 @@ const ResourceCalendar = ({
                 console.log("moved:", x);
                 recalculate_pending_items_when_moved(x);
               }}
+              gridItemContent={gridItemContent}
             />
           );
         } else return null;
@@ -585,10 +620,12 @@ const styles = {
     display: "table-row",
     border: "#f0f0f0 1px solid"
   },
-  iconTimeNavigator: {
+  iconTimeNavigator: (width, height) => ({
     cursor: "pointer",
-    height: "100%"
-  },
+    height: "100%",
+    width: width,
+    height: height
+  }),
   leftTimePanelItemStyle: viewType => {
     return {
       position: "relative",

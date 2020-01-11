@@ -1,0 +1,18 @@
+/* set opacity for day items when mouse come over to their container*/
+.gridItemContainer:hover {
+  opacity: 1;
+}
+
+.react-draggable,
+.cursor {
+  cursor: move;
+}
+.no-cursor {
+  cursor: auto;
+}
+.cursor-y {
+  cursor: ns-resize;
+}
+.cursor-x {
+  cursor: ew-resize;
+}

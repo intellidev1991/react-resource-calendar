@@ -1,12 +1,10 @@
-import { logisticsPlannerDispatchPending } from "./stores/logisticsPlannerDispatchPending.store";
-import { logisticsPlannerCurrentViewPortResources } from "./stores/logisticsPlannerCurrentViewPortResources.store";
+import { dispatchPendingList } from "./stores/dispatchPendingList.store";
+import { currentViewPortResources } from "./stores/currentViewPortResources.store";
 
 // ------ use this object as store identifier invoker in whole app
 const storeNames = {
-  logisticsPlanner: {
-    logisticsPlannerDispatchPending,
-    logisticsPlannerCurrentViewPortResources
-  }
+  dispatchPendingList,
+  currentViewPortResources
 };
 // ------
 export { storeNames };

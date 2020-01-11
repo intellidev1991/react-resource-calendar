@@ -5,8 +5,8 @@ const types = {
   SET_CURRENT_VIEWPORT_RESOURCES: "SET_CURRENT_VIEWPORT_RESOURCES"
 };
 // define store with name,initialState and reducer
-const logisticsPlannerCurrentViewPortResources = createStore(
-  "logisticsPlannerCurrentViewPortResources",
+const currentViewPortResources = createStore(
+  "currentViewPortResources",
   {
     currentViewportResources: []
   },
@@ -24,4 +24,4 @@ const logisticsPlannerCurrentViewPortResources = createStore(
   }
 );
 
-export { logisticsPlannerCurrentViewPortResources, types };
+export { currentViewPortResources, types };

@@ -5,16 +5,29 @@ import { MockData } from "./mockdata.json";
 import "./App.scss";
 
 const App = props => {
+  const [numberOfChanged, setNumberOfChanged] = useState(0);
+  const [mockData, setMockData] = useState(MockData.dayViewItems());
+  const refRGCalendar = useRef();
+
   return (
     <div style={styles.centerScreen}>
       <h3>
-        The simple drag and drop and resize-able resource calendar for 24 hours
+        The simple drag and drop and resize-able resource calendar for 24 hours{" "}
+        <span style={styles.changedEvents}>
+          Updated events: {numberOfChanged}{" "}
+        </span>
+        <span>
+          <button onClick={() => refRGCalendar.current.clearPendingList()}>
+            Clear
+          </button>
+        </span>
       </h3>
       <ResourceGridCalendar
+        ref={refRGCalendar}
         width={1200}
         height={800}
         startFrom7AM={true}
-        resourceData={MockData.dayViewItems()}
+        resourceData={mockData}
         calendarContainerStyle={{}}
         columnHeaderContent={({ name, job }) => {
           return (
@@ -24,7 +37,7 @@ const App = props => {
             </div>
           );
         }}
-        columnHeaderContainerStyle={{}}
+        columnHeaderContainerStyle={{ height: 55, marginTop: "5px" }}
         topLeftBackIcon={"https://img.icons8.com/ios/50/000000/less-than.png"}
         topRightNextIcon={"https://img.icons8.com/ios/50/000000/more-than.png"}
         topLeftBackIconStyle={{}}
@@ -53,6 +66,12 @@ const App = props => {
             </div>
           );
         }}
+        onEventsChanged={events => {
+          //get list of changed items
+          setNumberOfChanged(events.length);
+        }}
+        sidebarsWidth={60}
+        headerBarHeight={65}
       />
     </div>
   );
@@ -77,6 +96,9 @@ const styles = {
     alignItems: "center",
     flex: "1",
     height: "100%"
+  },
+  changedEvents: {
+    color: "#1976D2"
   },
   textSub: {
     color: "#000000",

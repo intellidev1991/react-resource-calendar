@@ -1,12 +1,10 @@
-import { logisticsPlannerDispatchPending } from "./actions/logisticsPlannerDispatchPending.action";
-import { logisticsPlannerCurrentViewPortResources } from "./actions/logisticsPlannerCurrentViewPortResources.actions";
+import { dispatchPendingList } from "./actions/dispatchPendingList.action";
+import { currentViewPortResources } from "./actions/currentViewPortResources.actions";
 
 // ------ use this object as action function invoker in whole app
 const storeActions = {
-  logisticsPlanner: {
-    logisticsPlannerDispatchPending,
-    logisticsPlannerCurrentViewPortResources
-  }
+  dispatchPendingList,
+  currentViewPortResources
 };
 
 // ------

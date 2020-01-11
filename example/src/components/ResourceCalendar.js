@@ -17,14 +17,12 @@ import Icon_left_time from "./icon_left_time_back.svg";
 import Icon_right_time from "./icon_right_time_back.svg";
 
 //--- outer-grid box margins
-const outerGridMarginHorizontal = 60; // margin horizontal panel-left and right as pixel
-const outerGridMarginTop = 65; // margin horizontal panel-left and right as pixel
+//const headerBarHeight = 65; // margin
 const number_of_rows = 24; // as cell
 const number_of_columns = 6; // as cell
 const rowHeight = 60; // as pixel
 
 const ResourceCalendar = ({
-  heightWorkSpace, // scrolling height space
   containerHeightCalculator, // viewport space
   width,
   startFrom7AM = true,
@@ -38,7 +36,10 @@ const ResourceCalendar = ({
   topRightNextIconStyle = {},
   onTopRightNextIconClicked = null,
   onTopLeftBackIconClicked = null,
-  gridItemContent
+  gridItemContent,
+  onEventsChanged = null, //fired when grid events changed , resized or moved
+  sidebarsWidth = 60, //horizontal panel-left and right as pixel
+  headerBarHeight = 65
 }) => {
   const [resourceViewPort, setResourceViewPort] = useState([]);
   const [indexViewPort, setIndexViewPort] = useState(1);
@@ -49,8 +50,8 @@ const ResourceCalendar = ({
     false
   );
 
-  const [{ dayViewDispatchPendingItems }, dispatchPending] = useStore(
-    storeNames.logisticsPlanner.logisticsPlannerDispatchPending
+  const [{ pendingList_day }, dispatchPending] = useStore(
+    storeNames.dispatchPendingList
   );
   //----- Refs
   const [refState, setRefState] = useState(false);
@@ -68,6 +69,12 @@ const ResourceCalendar = ({
   useEffect(() => {
     jumpToStartViewPoint();
   }, [viewType]);
+
+  useEffect(() => {
+    if (onEventsChanged) {
+      onEventsChanged(pendingList_day);
+    }
+  }, [pendingList_day]);
 
   // jump to 7 am of viewPort screen-scheduler
   const jumpToStartViewPoint = () => {
@@ -97,12 +104,12 @@ const ResourceCalendar = ({
 
   // just viewport width without 2 left and right margin
   const calculate_viewportWidth = () => {
-    return width - outerGridMarginHorizontal * 2;
+    return width - sidebarsWidth * 2;
   };
 
   // just viewport height without resource bar height (not scrolling height)
   const calculate_viewportHeight = () => {
-    return containerHeightCalculator() - outerGridMarginTop - 6;
+    return containerHeightCalculator() - headerBarHeight - 6;
   };
   // ---------------------------------------- View port navigation
   const refreshViewPort = () => {
@@ -127,8 +134,8 @@ const ResourceCalendar = ({
       setResourceViewPort(nextBound);
       // update for drag-and-drop without re-rendering
       dispatchDirectly(
-        storeNames.logisticsPlanner.logisticsPlannerCurrentViewPortResources,
-        storeActions.logisticsPlanner.logisticsPlannerCurrentViewPortResources.setCurrentViewportResources(
+        storeNames.currentViewPortResources,
+        storeActions.currentViewPortResources.setCurrentViewportResources(
           nextBound
         )
       );
@@ -137,8 +144,8 @@ const ResourceCalendar = ({
       setResourceViewPort(viewBound);
       // update for drag-and-drop without re-rendering
       dispatchDirectly(
-        storeNames.logisticsPlanner.logisticsPlannerCurrentViewPortResources,
-        storeActions.logisticsPlanner.logisticsPlannerCurrentViewPortResources.setCurrentViewportResources(
+        storeNames.currentViewPortResources,
+        storeActions.currentViewPortResources.setCurrentViewportResources(
           viewBound
         )
       );
@@ -193,10 +200,7 @@ const ResourceCalendar = ({
       <div
         className={"flex-column flex-jc-center flex-ai-center iconRTGRight"}
         style={{
-          ...styles.iconTimeNavigator(
-            outerGridMarginHorizontal,
-            outerGridMarginTop
-          ),
+          ...styles.iconTimeNavigator(sidebarsWidth, headerBarHeight),
           cursor: isBackBtnNavigatorEnabled ? "pointer" : "no-drop",
           ...topLeftBackIconStyle
         }}
@@ -208,8 +212,8 @@ const ResourceCalendar = ({
         <div>
           <img
             style={{
-              maxHeight: outerGridMarginTop,
-              maxWidth: outerGridMarginHorizontal
+              maxHeight: headerBarHeight,
+              maxWidth: sidebarsWidth
             }}
             src={topLeftBackIcon ? topLeftBackIcon : Icon_left_time}
             alt="back"
@@ -225,10 +229,7 @@ const ResourceCalendar = ({
       <div
         className={"flex-column flex-jc-center flex-ai-center iconRTGRight"}
         style={{
-          ...styles.iconTimeNavigator(
-            outerGridMarginHorizontal,
-            outerGridMarginTop
-          ),
+          ...styles.iconTimeNavigator(sidebarsWidth, headerBarHeight),
           cursor: isNextBtnNavigatorEnabled ? "pointer" : "no-drop",
           ...topRightNextIconStyle
         }}
@@ -240,8 +241,8 @@ const ResourceCalendar = ({
         <div>
           <img
             style={{
-              maxHeight: outerGridMarginTop,
-              maxWidth: outerGridMarginHorizontal
+              maxHeight: headerBarHeight,
+              maxWidth: sidebarsWidth
             }}
             src={topRightNextIcon ? topRightNextIcon : Icon_right_time}
             alt="next"
@@ -253,7 +254,7 @@ const ResourceCalendar = ({
 
   const leftTimeBarIndicator = () => {
     return (
-      <div style={styles.leftTimePanelItemsContainer}>
+      <div style={styles.leftTimePanelItemsContainer(sidebarsWidth)}>
         {[...Array(number_of_rows).keys()].map(i => {
           if (i === 0) {
             return (
@@ -329,6 +330,7 @@ const ResourceCalendar = ({
               return (
                 <ColumnHeader
                   key={"dtr" + i}
+                  headerBarHeight={headerBarHeight}
                   id={item.resourceId}
                   data={item}
                   columnHeaderContent={columnHeaderContent}
@@ -349,7 +351,7 @@ const ResourceCalendar = ({
           <div
             key={"rdc" + i}
             style={styles.drawGridLinesColumn_dayViewStyle(
-              outerGridMarginTop,
+              headerBarHeight,
               left
             )}
           />
@@ -360,15 +362,19 @@ const ResourceCalendar = ({
 
   const topFixResourceBarContainer = () => {
     return (
-      <div style={styles.topFixResourceBar(width)}>
-        <div style={{ ...styles.colGutter, ...styles.borderRight }}>
+      <div style={styles.topFixResourceBar(width, headerBarHeight)}>
+        <div
+          style={{ ...styles.colGutter(sidebarsWidth), ...styles.borderRight }}
+        >
           {resourceBar_LeftBackIcon()}
         </div>
-        <div style={styles.colMain}>
+        <div style={styles.colMain(sidebarsWidth)}>
           {resourceColumnsSeparator_DayView()}
           {resourceBar_centerResourceNames()}
         </div>
-        <div style={{ ...styles.colGutter, ...styles.borderLeft }}>
+        <div
+          style={{ ...styles.colGutter(sidebarsWidth), ...styles.borderLeft }}
+        >
           {resourceBar_RightNextIcon()}
         </div>
       </div>
@@ -380,9 +386,7 @@ const ResourceCalendar = ({
     if (viewType === "Day") {
       // dispatch pending day items
       dispatchPending(
-        storeActions.logisticsPlanner.logisticsPlannerDispatchPending.addDayViewPendingItem(
-          { ...data }
-        )
+        storeActions.dispatchPendingList.addDayViewPendingItem({ ...data })
       );
     }
   };
@@ -391,7 +395,7 @@ const ResourceCalendar = ({
     if (viewType === "Day") {
       if (resourceViewPort && resourceViewPort.length > 0) {
         //current pending list events ids
-        const day_pending_events_ids = dayViewDispatchPendingItems.map(
+        const day_pending_events_ids = pendingList_day.map(
           i => i.events.eventId
         );
         const dayItemArray = resourceViewPort.map((item, i) => {
@@ -402,6 +406,8 @@ const ResourceCalendar = ({
               return (
                 <GridItem
                   data={{ ...item, events: e }}
+                  startTime={e.startTime}
+                  endTime={e.endTime}
                   viewportWidth={calculate_viewportWidth()}
                   number_of_columns={number_of_columns}
                   rowHeight={rowHeight}
@@ -431,7 +437,7 @@ const ResourceCalendar = ({
   const recalculate_pending_items_when_moved = data => {
     if (viewType === "Day") {
       dispatchPending(
-        storeActions.logisticsPlanner.logisticsPlannerDispatchPending.editDayViewPendingItem(
+        storeActions.dispatchPendingList.editDayViewPendingItem(
           data.events.eventId,
           { ...data }
         )
@@ -445,11 +451,13 @@ const ResourceCalendar = ({
       i => i.resourceId
     );
     if (viewType === "Day") {
-      const events_pending = dayViewDispatchPendingItems.map(e => {
+      const events_pending = pendingList_day.map(e => {
         if (current_viewport_resourceIds.includes(e._extra.resourceId_new)) {
           return (
             <GridItem
               data={{ ...e }}
+              startTime={e._extra.startTime}
+              endTime={e._extra.endTime}
               viewportWidth={calculate_viewportWidth()}
               number_of_columns={number_of_columns}
               rowHeight={rowHeight}
@@ -463,6 +471,7 @@ const ResourceCalendar = ({
           );
         } else return null;
       });
+      console.log("events_pending", events_pending);
       return events_pending;
     }
   };
@@ -470,10 +479,10 @@ const ResourceCalendar = ({
   return (
     <div>
       {topFixResourceBarContainer()}
-      <div style={styles.mainGrid(viewType)}>
+      <div style={styles.mainGrid(headerBarHeight)}>
         <div
           style={{
-            ...styles.colGutter,
+            ...styles.colGutter(sidebarsWidth),
             ...styles.borderRight,
             height:
               viewType !== "Month"
@@ -483,7 +492,7 @@ const ResourceCalendar = ({
         >
           {leftTimeBarIndicator()}
         </div>
-        <div style={styles.colMain}>
+        <div style={styles.colMain(sidebarsWidth)}>
           <GridLineDayView
             viewType={viewType}
             number_of_rows={number_of_rows}
@@ -503,7 +512,9 @@ const ResourceCalendar = ({
             {render_pending_items()}
           </div>
         </div>
-        <div style={{ ...styles.colGutter, ...styles.borderLeft }}></div>
+        <div
+          style={{ ...styles.colGutter(sidebarsWidth), ...styles.borderLeft }}
+        ></div>
       </div>
     </div>
   );
@@ -522,44 +533,35 @@ const styles = {
       overflowX: "hidden"
     };
   },
-  mainGrid: viewType => {
-    return {
-      display: "table",
-      width: "100%",
-      position: "relative",
-      top: `${
-        viewType === "Week" ? outerGridMarginTop * 2 : outerGridMarginTop
-      }px`
-    };
-  },
-  topFixResourceBar: width => ({
+  mainGrid: headerBarHeight => ({
+    display: "table",
+    width: "100%",
+    position: "relative",
+    top: headerBarHeight
+  }),
+  topFixResourceBar: (width, headerBarHeight) => ({
     display: "table",
     width: width,
-    height: `${outerGridMarginTop}px`,
+    height: `${headerBarHeight}px`,
     position: "fixed",
     backgroundColor: "#FFF",
     zIndex: "90000" // overlay has 100,000, it have to less that 100,000 and greater that 9999(events item between 1,9999)
   }),
-  colGutter: {
-    width: "60px",
+  colGutter: sidebarsWidth => ({
+    width: sidebarsWidth,
     display: "table-cell",
     textAlign: "center"
-  },
-  colMain: {
+  }),
+  colMain: sidebarsWidth => ({
     position: "relative",
-    width: `calc(100% - ${outerGridMarginHorizontal * 2}px)`,
+    width: `calc(100% - ${sidebarsWidth * 2}px)`,
     display: "table-cell"
-  },
+  }),
   borderLeft: {
     borderLeft: "1px solid #B7B7B8"
   },
   borderRight: {
     borderRight: "1px solid #B7B7B8"
-  },
-  mainTopRow: {
-    height: `${outerGridMarginTop}px`,
-    display: "table-row",
-    border: "#f0f0f0 1px solid"
   },
   iconTimeNavigator: (width, height) => ({
     cursor: "pointer",
@@ -575,12 +577,12 @@ const styles = {
       height: `${viewType === "Month" ? 15 : rowHeight}px`
     };
   },
-  leftTimePanelItemsContainer: {
+  leftTimePanelItemsContainer: sidebarsWidth => ({
     position: "absolute",
-    width: `${outerGridMarginHorizontal}px`,
+    width: `${sidebarsWidth}px`,
     zIndex: "10",
     top: "-10px"
-  },
+  }),
   drawGridLinesColumn_dayViewStyle: (line_height, left) => {
     return {
       position: "absolute",

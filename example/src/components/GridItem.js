@@ -48,17 +48,19 @@ const GridItem = ({
   colNum,
   notifyPositionChanged = null,
   gridItemContent: GridItemContent,
-  data
+  data,
+  startTime,
+  endTime
 }) => {
   const forceUpdate = useForceUpdate();
 
-  const EndTimeRef = useRef(new Date(data.events.endTime));
-  const StartTimeRef = useRef(new Date(data.events.startTime));
+  const EndTimeRef = useRef(new Date(endTime));
+  const StartTimeRef = useRef(new Date(startTime));
 
   //--- Drag and Drop
   const xy = useRef({
     x: colNum * (viewportWidth / number_of_columns), //which column
-    y: calculate_Y_AxisAsStartPoint(new Date(data.events.startTime), rowHeight) // start vertical point
+    y: calculate_Y_AxisAsStartPoint(new Date(startTime), rowHeight) // start vertical point
   });
   const [axis, setAxis] = useState("both"); //both - x - y
   const [isDragging, setIsDragging] = useState(false);
@@ -199,21 +201,21 @@ const GridItem = ({
       const newColumnNumber = calculate_new_column_number(xyValue);
       //---- note: resourceId=-1 is empty boxes
       const { currentViewportResources } = readOnlyStore(
-        storeNames.logisticsPlanner.logisticsPlannerCurrentViewPortResources
+        storeNames.currentViewPortResources
       );
       const resourceId_new =
         currentViewportResources[newColumnNumber].resourceId;
       //----
-      console.log("data1:", data);
-      let data_new = { ...data };
-      data_new.events.startTime = StartTimeRef.current;
-      data_new.events.endTime = EndTimeRef.current;
+      let data_new = Object.assign({}, data);
+      //data_new.events.startTime = StartTimeRef.current;
+      //data_new.events.endTime = EndTimeRef.current;
       data_new._extra = {
         resourceId_new, // after moved, new resource id
         xy: xyValue,
-        newColumnNumber
+        newColumnNumber,
+        startTime: StartTimeRef.current,
+        endTime: EndTimeRef.current
       };
-      console.log("data2:", data_new);
       notifyPositionChanged(data_new);
     }
   };

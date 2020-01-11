@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Draggable from "react-draggable";
 import moment from "moment";
 import { commonFunctions } from "./commonFunctions";
-import { CircleGenerators } from "./CircleGenerators";
 import { useForceUpdate } from "./useForceUpdate";
 import { readOnlyStore, storeNames } from "./globalStore/index";
 import "./GridItem.css"; // custom
@@ -47,25 +46,19 @@ const GridItem = ({
   number_of_columns,
   rowHeight,
   colNum,
-  resourceId,
-  eventId,
-  startTime,
-  endTime,
-  badges = [], // array of => [{ label: '!', colorName: 'red' }] > as convention if badges array contain more that 1 item then: the first item contain the smallCircleBadge info, otherwise small badge should be gone.
-  descriptions = {},
   notifyPositionChanged = null,
   gridItemContent: GridItemContent,
   data
 }) => {
   const forceUpdate = useForceUpdate();
 
-  const EndTimeRef = useRef(endTime);
-  const StartTimeRef = useRef(startTime);
+  const EndTimeRef = useRef(new Date(data.events.endTime));
+  const StartTimeRef = useRef(new Date(data.events.startTime));
 
   //--- Drag and Drop
   const xy = useRef({
     x: colNum * (viewportWidth / number_of_columns), //which column
-    y: calculate_Y_AxisAsStartPoint(startTime, rowHeight) // start vertical point
+    y: calculate_Y_AxisAsStartPoint(new Date(data.events.startTime), rowHeight) // start vertical point
   });
   const [axis, setAxis] = useState("both"); //both - x - y
   const [isDragging, setIsDragging] = useState(false);
@@ -77,20 +70,6 @@ const GridItem = ({
 
   // --- effects
   useEffect(() => {
-    // remove badge with label ! and select the most first badge and choice its info
-    let _withWarning = badges.filter(item => item.label === "!"); //catch warning label >> !
-    let _withoutWarning = badges.filter(item => item.label !== "!"); //catch rest of badge without !
-    if (badges.length === 1 && _withWarning.length === 1) {
-      //set primary color to warning
-      setPrimaryColor(commonFunctions.getGridColor(_withWarning[0].colorName));
-    } else {
-      // if more that 1 badges available, then set color to most first item of them without consider warning item
-      if (_withoutWarning && _withoutWarning[0]) {
-        setPrimaryColor(
-          commonFunctions.getGridColor(_withoutWarning[0].colorName)
-        );
-      }
-    }
     return () => {
       try {
         document.removeEventListener("mousemove", handleParentMouseMove);
@@ -99,7 +78,7 @@ const GridItem = ({
         document.removeEventListener("mouseup", handleMouseUp);
       } catch (e) {}
     };
-  }, [badges]);
+  }, []);
   //---------------------------- store movement data
   // The distance the mouse has moved since `mousedown`.
   const delta = useRef({ x: 0, y: 0 });
@@ -149,7 +128,6 @@ const GridItem = ({
     startDragPos.current = { x: e.clientX, y: e.clientY }; //save current position
     document.addEventListener("mousemove", handleParentMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
-    console.log("nbb", e);
     return;
   };
   //-----------------------------
@@ -163,20 +141,14 @@ const GridItem = ({
   };
 
   // ---- Dnd
-  const handleStart = (e, data) => {
-    console.log("Event: ", e.type); //mousedown
-  };
+  const handleStart = (e, data) => {};
   const handleStop = (e, data) => {
     if (!isDragging) {
       // onClick stuff here
-      console.log("click");
     } else {
       // drag stop
       setIsDragging(false);
-
-      console.log("Event: ", e.type); //mouseup
       let { lastX, lastY } = data;
-      console.log(lastX, lastY);
       // ---------- check ant condition here, if position was ok, set it otherwise ignore setXY to component jump to previous position
       let pos = { x: lastX, y: lastY };
       // for both,x,y axis movement
@@ -188,14 +160,12 @@ const GridItem = ({
       }
 
       let deltaY = lastY - xy.current.y;
-      console.log(deltaY);
       // calc original height before apply new start time
       const original_height = calculate_Height_AsEndPoint(
         StartTimeRef.current,
         EndTimeRef.current,
         rowHeight
       );
-      console.log(original_height);
       // apply new start time
       let newStartTime = addMinutes(StartTimeRef.current, deltaY);
       StartTimeRef.current = newStartTime;
@@ -212,8 +182,6 @@ const GridItem = ({
 
   const handleDrag = (e, data) => {
     setIsDragging(true);
-    console.log("Event: ", e.type); //mousemove
-    //console.log(positionFetcher(data));
   };
 
   // calculate column number based on current x position
@@ -228,23 +196,25 @@ const GridItem = ({
   const notifyMyPositionChanged = xyValue => {
     if (notifyPositionChanged) {
       //new col after moved
-      const newCol = calculate_new_column_number(xyValue);
+      const newColumnNumber = calculate_new_column_number(xyValue);
       //---- note: resourceId=-1 is empty boxes
       const { currentViewportResources } = readOnlyStore(
         storeNames.logisticsPlanner.logisticsPlannerCurrentViewPortResources
       );
-      const resourceId_new = currentViewportResources[newCol].resourceId;
+      const resourceId_new =
+        currentViewportResources[newColumnNumber].resourceId;
       //----
-      notifyPositionChanged({
-        resourceId_original: resourceId, // original resource id
+      console.log("data1:", data);
+      let data_new = { ...data };
+      data_new.events.startTime = StartTimeRef.current;
+      data_new.events.endTime = EndTimeRef.current;
+      data_new._extra = {
         resourceId_new, // after moved, new resource id
-        eventId,
         xy: xyValue,
-        originalCol: colNum,
-        newCol,
-        startTime: StartTimeRef.current,
-        endTime: EndTimeRef.current
-      });
+        newColumnNumber
+      };
+      console.log("data2:", data_new);
+      notifyPositionChanged(data_new);
     }
   };
   // ----

@@ -377,33 +377,11 @@ const ResourceCalendar = ({
 
   // add calender item to pending list when we moved it for first time
   const add_calender_Items_into_pending_list = data => {
-    const {
-      endTime,
-      startTime,
-      eventId,
-      newCol,
-      originalCol,
-      subColumn, // just for WeekItem and MontItem, in GridItem this is undefined
-      resourceId_original,
-      resourceId_new
-    } = data;
-    //set moved item into pending list
-    const event = resourceViewPort[originalCol].events.filter(
-      i => i.eventId === eventId
-    )[0];
-    const events = [{ ...event, endTime, startTime, eventId }]; //recalculate event- only on item is here
-
     if (viewType === "Day") {
-      const pendingItem = {
-        resourceId: resourceId_new, // with this id we assign this object into that resource into events array
-        colNumber: newCol,
-        type: "calenderItem",
-        events: events // only one object is here in array
-      };
       // dispatch pending day items
       dispatchPending(
         storeActions.logisticsPlanner.logisticsPlannerDispatchPending.addDayViewPendingItem(
-          pendingItem
+          { ...data }
         )
       );
     }
@@ -414,7 +392,7 @@ const ResourceCalendar = ({
       if (resourceViewPort && resourceViewPort.length > 0) {
         //current pending list events ids
         const day_pending_events_ids = dayViewDispatchPendingItems.map(
-          i => i.events[0].eventId
+          i => i.events.eventId
         );
         const dayItemArray = resourceViewPort.map((item, i) => {
           const colIndex = i;
@@ -428,15 +406,8 @@ const ResourceCalendar = ({
                   number_of_columns={number_of_columns}
                   rowHeight={rowHeight}
                   colNum={colIndex} // 0-5 => 6
-                  resourceId={item.resourceId}
-                  eventId={e.eventId}
                   key={e.eventId}
-                  startTime={new Date(e.startTime)}
-                  endTime={new Date(e.endTime)}
-                  badges={e.badges}
-                  descriptions={e.descriptions}
                   notifyPositionChanged={x => {
-                    console.log(x);
                     add_calender_Items_into_pending_list(x);
                   }}
                   gridItemContent={gridItemContent}
@@ -458,33 +429,11 @@ const ResourceCalendar = ({
 
   // re-calculate pending items values after we moved them again
   const recalculate_pending_items_when_moved = data => {
-    const {
-      endTime,
-      startTime,
-      eventId,
-      newCol,
-      subColumn, //only for weekItem and MonthItem
-      resourceId_original,
-      resourceId_new
-    } = data;
     if (viewType === "Day") {
-      // get moved item from Day Repo
-      let movedItem = dayViewDispatchPendingItems.filter(
-        i => i.events[0].eventId === eventId
-      );
-
-      movedItem = movedItem[0]; //get only exist object from array
-      const events = [{ ...movedItem.events[0], endTime, startTime, eventId }]; //recalculate event- only on item is here
-      movedItem = {
-        ...movedItem,
-        colNumber: newCol,
-        resourceId: resourceId_new,
-        events
-      }; // new item object
       dispatchPending(
         storeActions.logisticsPlanner.logisticsPlannerDispatchPending.editDayViewPendingItem(
-          eventId,
-          movedItem
+          data.events.eventId,
+          { ...data }
         )
       );
     }
@@ -497,24 +446,16 @@ const ResourceCalendar = ({
     );
     if (viewType === "Day") {
       const events_pending = dayViewDispatchPendingItems.map(e => {
-        const event = e.events[0];
-        if (current_viewport_resourceIds.includes(e.resourceId)) {
+        if (current_viewport_resourceIds.includes(e._extra.resourceId_new)) {
           return (
             <GridItem
-              data={e}
+              data={{ ...e }}
               viewportWidth={calculate_viewportWidth()}
               number_of_columns={number_of_columns}
               rowHeight={rowHeight}
-              colNum={e.colNumber} // 0-5 => 6
-              resourceId={e.resourceId}
-              eventId={event.eventId}
-              key={event.eventId}
-              startTime={new Date(event.startTime)}
-              endTime={new Date(event.endTime)}
-              badges={event.badges}
-              descriptions={event.descriptions}
+              colNum={e._extra.newColumnNumber} // 0-5 => 6
+              key={e.events.eventId}
               notifyPositionChanged={x => {
-                console.log("moved:", x);
                 recalculate_pending_items_when_moved(x);
               }}
               gridItemContent={gridItemContent}

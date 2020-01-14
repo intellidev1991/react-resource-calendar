@@ -66,11 +66,16 @@ const App = props => {
             </div>
           );
         }}
+        topBarStyle={{ backgroundColor: "#F50057", height: "2px" }}
+        bodyStyle={{ backgroundColor: "#ECEFF1" }}
+        bottomBarStyle={{ backgroundColor: "#2979FF" }}
+        onItemClickHandler={() => {}}
+        onTopBarClickHandler={() => {}}
         onEventsChanged={events => {
           //get list of changed items
           setNumberOfChanged(events.length);
         }}
-        sidebarsWidth={60}
+        sidebarsWidth={50}
         headerBarHeight={65}
       />
     </div>

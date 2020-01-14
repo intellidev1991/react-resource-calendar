@@ -39,7 +39,12 @@ const ResourceCalendar = ({
   gridItemContent,
   onEventsChanged = null, //fired when grid events changed , resized or moved
   sidebarsWidth = 60, //horizontal panel-left and right as pixel
-  headerBarHeight = 65
+  headerBarHeight = 65,
+  topBarStyle = {},
+  bottomBarStyle = {},
+  bodyStyle = {},
+  onItemClickHandler = null,
+  onTopBarClickHandler = null
 }) => {
   const [resourceViewPort, setResourceViewPort] = useState([]);
   const [indexViewPort, setIndexViewPort] = useState(1);
@@ -417,6 +422,11 @@ const ResourceCalendar = ({
                     add_calender_Items_into_pending_list(x);
                   }}
                   gridItemContent={gridItemContent}
+                  topBarStyle={topBarStyle}
+                  bottomBarStyle={bottomBarStyle}
+                  bodyStyle={bodyStyle}
+                  onItemClickHandler={onItemClickHandler}
+                  onTopBarClickHandler={onTopBarClickHandler}
                 />
               );
             } else return null;
@@ -467,6 +477,11 @@ const ResourceCalendar = ({
                 recalculate_pending_items_when_moved(x);
               }}
               gridItemContent={gridItemContent}
+              topBarStyle={topBarStyle}
+              bottomBarStyle={bottomBarStyle}
+              bodyStyle={bodyStyle}
+              onItemClickHandler={onItemClickHandler}
+              onTopBarClickHandler={onTopBarClickHandler}
             />
           );
         } else return null;

@@ -33,7 +33,12 @@ const ResourceGridCalendar = withForwardedRef(
     onEventsChanged = null,
     forwardedRef,
     sidebarsWidth = 60,
-    headerBarHeight = 65
+    headerBarHeight = 65,
+    topBarStyle = {},
+    bottomBarStyle = {},
+    bodyStyle = {},
+    onItemClickHandler = null,
+    onTopBarClickHandler = null
   }) => {
     const [realHeightScrollingSpace, setRealHeightScrollingSpace] = useState(0);
     const refParentOfResourceCalendar = useRef(null);
@@ -91,6 +96,11 @@ const ResourceGridCalendar = withForwardedRef(
           onEventsChanged={onEventsChanged}
           sidebarsWidth={sidebarsWidth}
           headerBarHeight={headerBarHeight}
+          topBarStyle={topBarStyle}
+          bottomBarStyle={bottomBarStyle}
+          bodyStyle={bodyStyle}
+          onItemClickHandler={onItemClickHandler}
+          onTopBarClickHandler={onTopBarClickHandler}
         />
       </div>
     );

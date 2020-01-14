@@ -50,7 +50,12 @@ const GridItem = ({
   gridItemContent: GridItemContent,
   data,
   startTime,
-  endTime
+  endTime,
+  topBarStyle = {},
+  bottomBarStyle = {},
+  bodyStyle = {},
+  onItemClickHandler = null,
+  onTopBarClickHandler = null
 }) => {
   const forceUpdate = useForceUpdate();
 
@@ -67,8 +72,6 @@ const GridItem = ({
   const [isDraggingEnabled, setIsDraggingEnabled] = useState(true);
   //---
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // top and bottom border color
-  const [primaryColor, setPrimaryColor] = useState("green");
 
   // --- effects
   useEffect(() => {
@@ -81,15 +84,10 @@ const GridItem = ({
       } catch (e) {}
     };
   }, []);
-  //---------------------------- store movement data
   // The distance the mouse has moved since `mousedown`.
   const delta = useRef({ x: 0, y: 0 });
-  // Store startDragPos in a `ref` so handlers always have the latest value.
   const startDragPos = useRef({ x: 0, y: 0 });
 
-  // `useCallback` is needed because `removeEventListener`` requires the handler
-  // to be the same as `addEventListener`.  Without `useCallback` React will
-  // create a new handler each render.
   const handleParentMouseMove = useCallback(e => {
     delta.current = {
       x: e.clientX - startDragPos.current.x,
@@ -207,8 +205,6 @@ const GridItem = ({
         currentViewportResources[newColumnNumber].resourceId;
       //----
       let data_new = Object.assign({}, data);
-      //data_new.events.startTime = StartTimeRef.current;
-      //data_new.events.endTime = EndTimeRef.current;
       data_new._extra = {
         resourceId_new, // after moved, new resource id
         xy: xyValue,
@@ -257,15 +253,21 @@ const GridItem = ({
             ref={nodeTobBar}
             className={"draggableDisabled"}
             style={{
-              ...styles.top,
               ...styles.nodeTobBar,
-              backgroundColor: primaryColor
+              ...topBarStyle
+            }}
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (onTopBarClickHandler) onTopBarClickHandler(e);
             }}
           ></div>
           <div
-            style={styles.body(isMenuOpen)}
+            style={{ ...styles.body, ...bodyStyle }}
             onClick={e => {
               e.preventDefault();
+              e.stopPropagation();
+              if (onItemClickHandler) onItemClickHandler(e);
             }}
           >
             <GridItemContent {...data} />
@@ -274,9 +276,8 @@ const GridItem = ({
             ref={nodeBottomBar}
             className={"draggableDisabled"}
             style={{
-              ...styles.bottom,
               ...styles.nodeBottomBar,
-              backgroundColor: primaryColor
+              ...bottomBarStyle
             }}
             onMouseDown={onMouseDown_nodeBottomBarHandler}
           />
@@ -307,9 +308,9 @@ const styles = {
       height: height
     };
   },
-  top: {
+  nodeTobBar: {
     position: "relative",
-    backgroundColor: "#E94343",
+    backgroundColor: "#FF5722",
     borderRadius: "5px",
     height: "3px",
     width: "calc(100% - 8px)",
@@ -319,30 +320,22 @@ const styles = {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-
+    cursor: "default",
     zIndex: "10"
   },
-  bottom: {
-    backgroundColor: "#E94343",
+  nodeBottomBar: {
+    backgroundColor: "#2196F3",
     borderRadius: "5px",
     height: "3px",
     width: "calc(100% - 8px)",
     marginLeft: "4px",
-    marginRight: "-4px"
-  },
-  body: isMenuOpen => {
-    return {
-      flex: "1",
-      backgroundColor: "#F5F5F5",
-      transform: "scaleX(0.96)",
-      zIndex: isMenuOpen ? "3" : "1"
-    };
-  },
-  nodeTobBar: {
-    cursor: "default"
-  },
-  nodeBottomBar: {
+    marginRight: "-4px",
     cursor: "s-resize",
     zIndex: "2"
+  },
+  body: {
+    flex: "1",
+    backgroundColor: "#F5F5F5",
+    transform: "scaleX(0.96)"
   }
 };

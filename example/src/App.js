@@ -28,7 +28,7 @@ const App = props => {
         height={800}
         startFrom7AM={true}
         resourceData={mockData}
-        calendarContainerStyle={{}}
+        calendarContainerStyle={{ border: "1px solid #c4c4c4" }}
         columnHeaderContent={({ name, job }) => {
           return (
             <div style={styles.textContainer}>
@@ -77,6 +77,16 @@ const App = props => {
         }}
         sidebarsWidth={50}
         headerBarHeight={65}
+        leftTimePanelStyle={{ backgroundColor: "#fff" }}
+        leftTimePanelItemStyle={{ color: "#F50057" }}
+        gridLinesStyle={{
+          rowOddLines: { backgroundColor: "#66BB6A" },
+          rowEvenLines: { backgroundColor: "#B0BEC5" },
+          columnOddLines: { backgroundColor: "#8D6E63" },
+          columnEvenLines: { backgroundColor: "#FFA726" }
+        }}
+        innerMostLeftVerticalBorder={{ borderLeft: "1px solid #263238" }} // just pass borderLeft
+        innerMostRightVerticalBorder={{ borderRight: "1px solid #263238" }} // just pass borderRight
       />
     </div>
   );

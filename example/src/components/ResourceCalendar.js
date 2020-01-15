@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import "./ResourceCalendar.css";
 import { ColumnHeader } from "./ColumnHeader";
-import { GridLineDayView } from "./GridLineDayView";
+import { GridLines } from "./GridLines";
 import { GridItem } from "./GridItem";
 
 import {
@@ -44,7 +44,17 @@ const ResourceCalendar = ({
   bottomBarStyle = {},
   bodyStyle = {},
   onItemClickHandler = null,
-  onTopBarClickHandler = null
+  onTopBarClickHandler = null,
+  leftTimePanelStyle = {},
+  leftTimePanelItemStyle = {},
+  gridLinesStyle = {
+    rowOddLines: {},
+    rowEvenLines: {},
+    columnOddLines: {},
+    columnEvenLines: {}
+  },
+  innerMostLeftVerticalBorder = {},
+  innerMostRightVerticalBorder = {}
 }) => {
   const [resourceViewPort, setResourceViewPort] = useState([]);
   const [indexViewPort, setIndexViewPort] = useState(1);
@@ -259,14 +269,20 @@ const ResourceCalendar = ({
 
   const leftTimeBarIndicator = () => {
     return (
-      <div style={styles.leftTimePanelItemsContainer(sidebarsWidth)}>
+      <div
+        style={{
+          ...styles.leftTimePanelItemsContainer(sidebarsWidth),
+          ...leftTimePanelStyle
+        }}
+      >
         {[...Array(number_of_rows).keys()].map(i => {
           if (i === 0) {
             return (
               <div
                 style={{
                   ...styles.leftTimePanelItemStyle(viewType),
-                  top: "7px"
+                  top: "7px",
+                  ...leftTimePanelItemStyle
                 }}
                 key={"tl" + i}
               >
@@ -279,7 +295,8 @@ const ResourceCalendar = ({
                 key={"tl" + i}
                 style={{
                   ...styles.leftTimePanelItemStyle(viewType),
-                  height: "45px"
+                  height: "45px",
+                  ...leftTimePanelItemStyle
                 }}
               >
                 <span ref={refStartPoint}>{timeAM_PM(i)}</span>
@@ -289,7 +306,8 @@ const ResourceCalendar = ({
                 key={"tlx" + i}
                 style={{
                   ...styles.leftTimePanelItemStyle(viewType),
-                  height: "15px"
+                  height: "15px",
+                  ...leftTimePanelItemStyle
                 }}
               ></div>
             ];
@@ -300,7 +318,8 @@ const ResourceCalendar = ({
                 key={"tl" + i}
                 style={{
                   ...styles.leftTimePanelItemStyle(viewType),
-                  top: "5px"
+                  top: "5px",
+                  ...leftTimePanelItemStyle
                 }}
               >
                 <span>{timeAM_PM(i)}</span>
@@ -310,7 +329,10 @@ const ResourceCalendar = ({
             return (
               <div
                 key={"tl" + i}
-                style={styles.leftTimePanelItemStyle(viewType)}
+                style={{
+                  ...styles.leftTimePanelItemStyle(viewType),
+                  ...leftTimePanelItemStyle
+                }}
               >
                 {timeAM_PM(i)}
               </div>
@@ -348,37 +370,66 @@ const ResourceCalendar = ({
     }
   };
 
-  const resourceColumnsSeparator_DayView = () => {
+  const topFixHeaderSeparators = () => {
     if (viewType === "Day") {
       return [...Array(number_of_columns - 1).keys()].map(i => {
         const left = (i + 1) * (calculate_viewportWidth() / 6);
-        return (
-          <div
-            key={"rdc" + i}
-            style={styles.drawGridLinesColumn_dayViewStyle(
-              headerBarHeight,
-              left
-            )}
-          />
-        );
+        i = i + 1;
+        if (i % 2 === 0) {
+          //even lines
+          return (
+            <div
+              key={"rdc" + i}
+              style={{
+                ...styles.drawGridLinesColumn_dayViewStyle(
+                  headerBarHeight,
+                  left
+                ),
+                ...gridLinesStyle.columnEvenLines
+              }}
+            />
+          );
+        } else {
+          // odd lines
+          return (
+            <div
+              key={"rdc" + i}
+              style={{
+                ...styles.drawGridLinesColumn_dayViewStyle(
+                  headerBarHeight,
+                  left
+                ),
+                ...gridLinesStyle.columnOddLines
+              }}
+            />
+          );
+        }
       });
     }
   };
 
-  const topFixResourceBarContainer = () => {
+  const topFixHeader = () => {
     return (
       <div style={styles.topFixResourceBar(width, headerBarHeight)}>
         <div
-          style={{ ...styles.colGutter(sidebarsWidth), ...styles.borderRight }}
+          style={{
+            ...styles.colGutter(sidebarsWidth),
+            ...styles.borderRight,
+            ...innerMostRightVerticalBorder
+          }}
         >
           {resourceBar_LeftBackIcon()}
         </div>
         <div style={styles.colMain(sidebarsWidth)}>
-          {resourceColumnsSeparator_DayView()}
+          {topFixHeaderSeparators()}
           {resourceBar_centerResourceNames()}
         </div>
         <div
-          style={{ ...styles.colGutter(sidebarsWidth), ...styles.borderLeft }}
+          style={{
+            ...styles.colGutter(sidebarsWidth),
+            ...styles.borderLeft,
+            ...innerMostLeftVerticalBorder
+          }}
         >
           {resourceBar_RightNextIcon()}
         </div>
@@ -493,12 +544,13 @@ const ResourceCalendar = ({
 
   return (
     <div>
-      {topFixResourceBarContainer()}
+      {topFixHeader()}
       <div style={styles.mainGrid(headerBarHeight)}>
         <div
           style={{
             ...styles.colGutter(sidebarsWidth),
             ...styles.borderRight,
+            ...innerMostRightVerticalBorder,
             height:
               viewType !== "Month"
                 ? number_of_rows * rowHeight
@@ -508,13 +560,14 @@ const ResourceCalendar = ({
           {leftTimeBarIndicator()}
         </div>
         <div style={styles.colMain(sidebarsWidth)}>
-          <GridLineDayView
+          <GridLines
             viewType={viewType}
             number_of_rows={number_of_rows}
             number_of_columns={number_of_columns}
             rowHeight={rowHeight}
             heightWorkSpace={number_of_rows * rowHeight}
             viewportWidth={calculate_viewportWidth()}
+            gridLinesStyle={gridLinesStyle}
           />
           <div
             className={"playground-drag-and-drop"}
@@ -528,7 +581,11 @@ const ResourceCalendar = ({
           </div>
         </div>
         <div
-          style={{ ...styles.colGutter(sidebarsWidth), ...styles.borderLeft }}
+          style={{
+            ...styles.colGutter(sidebarsWidth),
+            ...styles.borderLeft,
+            ...innerMostLeftVerticalBorder
+          }}
         ></div>
       </div>
     </div>
